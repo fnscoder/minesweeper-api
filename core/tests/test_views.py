@@ -50,17 +50,41 @@ class GameViewSetTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {"error": "Game is not active"})
 
+    def test_flag_revealed_cell(self):
+        clean_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+        reveal_url = reverse("game-reveal", args=[self.game.id])
+        flag_url = reverse("game-flag", args=[self.game.id])
+        data = {"row": clean_cell.row, "column": clean_cell.column}
+        self.client.post(reveal_url, data, format="json")
+        response = self.client.post(flag_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {"error": "Cannot flag a revealed cell"})
+
+    def test_flag_cell_nonexistent_cell(self):
+        url = reverse("game-flag", args=[self.game.id])
+        data = {"row": 99, "column": 99}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {"error": "Cell not found"})
+
     def test_reveal_clean_cell(self):
-        mine_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+        clean_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
         url = reverse("game-reveal", args=[self.game.id])
-        data = {"row": mine_cell.row, "column": mine_cell.column}
+        data = {"row": clean_cell.row, "column": clean_cell.column}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_reveal_clean_cell_twice(self):
-        mine_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+    def test_reveal_nonexistent_cell(self):
         url = reverse("game-reveal", args=[self.game.id])
-        data = {"row": mine_cell.row, "column": mine_cell.column}
+        data = {"row": 99, "column": 99}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {"error": "Cell not found"})
+
+    def test_reveal_clean_cell_twice(self):
+        clean_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+        url = reverse("game-reveal", args=[self.game.id])
+        data = {"row": clean_cell.row, "column": clean_cell.column}
         self.client.post(url, data, format="json")
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -82,3 +106,16 @@ class GameViewSetTest(TestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {"error": "Game is not active"})
+
+    def test_win_game(self):
+        excluded_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+        clean_cells = Cell.objects.filter(game=self.game, is_mine=False).exclude(id=excluded_cell.id)
+        for cell in clean_cells:
+            cell.is_revealed = True
+            cell.save()
+        url = reverse("game-reveal", args=[self.game.id])
+        data = {"row": excluded_cell.row, "column": excluded_cell.column}
+        response = self.client.post(url, data, format="json")
+        self.game.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.game.status, GameStatus.WON)

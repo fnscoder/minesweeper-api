@@ -19,6 +19,12 @@ stop:
 test:
 	docker compose run app python manage.py test
 
+cov:
+	docker compose run app coverage run manage.py test
+
+cov-report:
+	docker compose run app coverage report -m
+
 statics:
 	docker compose run app python manage.py collectstatic
 
