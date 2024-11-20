@@ -128,6 +128,9 @@ class GameService:
             GameService._end_game(game, GameStatus.LOST)
             return GameSerializer(game).data, HTTP_200_OK
 
+        if cell.is_flagged:
+            cell.toggle_flag()
+
         GameService._reveal_cells(cell)
 
         if GameService._check_win_condition(game):
@@ -217,7 +220,6 @@ class GameService:
         if cell.is_revealed:
             return CANNOT_FLAG_REVEALED_CELL, HTTP_400_BAD_REQUEST
 
-        cell.is_flagged = not cell.is_flagged
-        cell.save()
+        cell.toggle_flag()
 
         return CellSerializer(cell).data, HTTP_200_OK

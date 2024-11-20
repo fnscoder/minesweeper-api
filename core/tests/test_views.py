@@ -140,6 +140,19 @@ class GameViewSetTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_reveal_flagged_cell(self):
+        """Test revealing a flagged cell"""
+        flagged_cell = Cell.objects.filter(game=self.game, is_mine=False).first()
+        flagged_cell.toggle_flag()
+        self.assertEqual(flagged_cell.is_flagged, True)
+        data = {"row": flagged_cell.row, "column": flagged_cell.column}
+
+        response = self.client.post(self.url_reveal, data, format="json")
+
+        flagged_cell.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(flagged_cell.is_flagged, False)
+
     def test_reveal_nonexistent_cell(self):
         """Test revealing a nonexistent cell"""
         data = {"row": 99, "column": 99}

@@ -68,6 +68,11 @@ class Cell(models.Model):
 
     objects = CellManager()
 
+    def toggle_flag(self):
+        """Toggle the flag status of the cell."""
+        self.is_flagged = not self.is_flagged
+        self.save()
+
     class Meta:
         unique_together = ("game", "row", "column")
 
