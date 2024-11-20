@@ -2,6 +2,14 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+
+from core.constants import (
+    CANNOT_FLAG_REVEALED_CELL,
+    CELL_ALREADY_REVEALED,
+    CELL_NOT_FOUND,
+    GAME_NOT_ACTIVE,
+    MINES_MUST_BE_SMALLER_THAN_CELLS,
+)
 from core.models import Game, GameStatus, GameMode, Cell
 from core.services import GameService
 
@@ -31,9 +39,7 @@ class GameViewSetTest(TestCase):
         data = {"rows": 5, "columns": 5, "mines": 30, "mode": GameMode.CUSTOM}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data, {"mines": ["mines should be smaller than rows * columns"]}
-        )
+        self.assertEqual(response.data["mines"][0], MINES_MUST_BE_SMALLER_THAN_CELLS)
 
     def test_flag_cell_active_game(self):
         url = reverse("game-flag", args=[self.game.id])

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .constants import MINES_MUST_BE_SMALLER_THAN_CELLS
 from .models import Game, Cell, GameMode
 
 
@@ -69,6 +70,6 @@ class GameSerializer(serializers.ModelSerializer):
         mines = data.get("mines")
         if mines >= rows * columns:
             raise serializers.ValidationError(
-                {"mines": "mines should be smaller than rows * columns"}
+                {"mines": MINES_MUST_BE_SMALLER_THAN_CELLS}
             )
         return data
