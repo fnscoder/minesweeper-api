@@ -8,7 +8,8 @@ from core.constants import (
     CELL_ALREADY_REVEALED,
     CELL_NOT_FOUND,
     GAME_NOT_ACTIVE,
-    MINES_MUST_BE_SMALLER_THAN_CELLS, ROWS_COLS_MINES_REQUIRED,
+    MINES_MUST_BE_SMALLER_THAN_CELLS,
+    ROWS_COLS_MINES_REQUIRED,
 )
 from core.models import Game, GameStatus, GameMode, Cell
 from core.services import GameService
@@ -43,6 +44,22 @@ class GameViewSetTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Game.objects.count(), 2)
+
+    def test_update_user_game(self):
+        """Test updating an existing game with its user"""
+        url = reverse("game-detail", args=[self.game.id])
+        self.assertIsNone(self.game.user)
+        data = {
+            "user": "test_user",
+        }
+
+        response = self.client.patch(url, data, format="json")
+
+        self.game.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["user"], data["user"])
+        self.assertEqual(self.game.user, data["user"])
 
     def test_retrieve_game(self):
         """Test retrieving an existing game"""
@@ -225,3 +242,11 @@ class GameViewSetTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.game.status, GameStatus.WON)
+
+    def test_leaderboard(self):
+        """Test retrieving the leaderboard"""
+        url = reverse("game-leaderboard")
+        response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 4)

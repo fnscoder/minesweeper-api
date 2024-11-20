@@ -67,20 +67,28 @@ class GameSerializer(serializers.ModelSerializer):
         return obj.duration
 
     def validate(self, data):
-        mode = data.get("mode")
-        if mode != GameMode.CUSTOM:
-            data.update(GAME_CONFIG[mode])
-            return data
+        if self.instance is None:
+            mode = data.get("mode")
+            if mode != GameMode.CUSTOM:
+                data.update(GAME_CONFIG[mode])
+                return data
 
-        rows = data.get("rows")
-        columns = data.get("columns")
-        mines = data.get("mines")
-        if not all((rows, columns, mines)):
-            raise serializers.ValidationError(
-                {"required": ROWS_COLS_MINES_REQUIRED}
-            )
-        if mines >= rows * columns:
-            raise serializers.ValidationError(
-                {"mines": MINES_MUST_BE_SMALLER_THAN_CELLS}
-            )
+            rows = data.get("rows")
+            columns = data.get("columns")
+            mines = data.get("mines")
+            if not all((rows, columns, mines)):
+                raise serializers.ValidationError(
+                    {"required": ROWS_COLS_MINES_REQUIRED}
+                )
+            if mines >= rows * columns:
+                raise serializers.ValidationError(
+                    {"mines": MINES_MUST_BE_SMALLER_THAN_CELLS}
+                )
+            return data
         return data
+
+
+class LeaderboardGameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ("user", "mode", "duration", "finished_at")

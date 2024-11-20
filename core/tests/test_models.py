@@ -26,9 +26,7 @@ class GameModelTest(TestCase):
 
     def test_game_duration_is_not_none_on_finished_game(self):
         """Test if the duration is not None on a finished game"""
-        self.game.status = GameStatus.WON
-        self.game.finished_at = timezone.now()
-        self.game.save()
+        self.game.end_game(GameStatus.WON)
 
         self.assertFalse(self.game.is_active())
         self.assertIsNotNone(self.game.duration)

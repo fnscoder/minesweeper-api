@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 
 
 class GameStatus(models.TextChoices):
@@ -32,15 +33,16 @@ class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     finished_at = models.DateTimeField(null=True, blank=True)
-
-    @property
-    def duration(self):
-        if self.finished_at:
-            return (self.finished_at - self.created_at).total_seconds()
-        return None
+    duration = models.FloatField(null=True, blank=True)
 
     def is_active(self):
         return self.status == GameStatus.ACTIVE
+
+    def end_game(self, status):
+        self.status = status
+        self.finished_at = now()
+        self.duration = (self.finished_at - self.created_at).total_seconds()
+        self.save()
 
     def __str__(self):
         return f"Game {self.id}"

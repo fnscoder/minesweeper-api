@@ -4,8 +4,8 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet
 
 from .constants import GAME_NOT_ACTIVE
-from .models import Game
-from .serializers import GameSerializer
+from .models import Game, GameStatus, GameMode
+from .serializers import GameSerializer, LeaderboardGameSerializer
 from .services import GameService
 
 
@@ -41,3 +41,21 @@ class GameViewSet(ModelViewSet):
         """Action to reveal a cell in the game."""
         data, status_code = self._process_cell_action(request, GameService.reveal_cell)
         return Response(data, status=status_code)
+
+    @action(detail=False, methods=["get"])
+    def leaderboard(self, request):
+        """
+        Retrieve the leaderboard for each game mode order by the shortest duration.
+        The number of top players returned can be controlled using the `size` query parameter.
+        """
+        size = int(request.query_params.get("size", 10))
+
+        modes = [GameMode.EASY, GameMode.MEDIUM, GameMode.HARD, GameMode.CUSTOM]
+        leaderboards = {}
+        for mode in modes:
+            leaderboard = Game.objects.filter(
+                status=GameStatus.WON, mode=mode
+            ).order_by("duration")[:size]
+            leaderboards[mode] = LeaderboardGameSerializer(leaderboard, many=True).data
+
+        return Response(leaderboards)

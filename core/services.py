@@ -1,7 +1,6 @@
 from random import sample
 
 from django.db import transaction
-from django.utils.timezone import now
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from .constants import CANNOT_FLAG_REVEALED_CELL, CELL_ALREADY_REVEALED, CELL_NOT_FOUND
@@ -166,9 +165,7 @@ class GameService:
             game (Game): The game instance.
             status (GameStatus): The status to set for the game.
         """
-        game.status = status
-        game.finished_at = now()
-        game.save()
+        game.end_game(status)
         GameService._reveal_all_cells(game)
 
     @staticmethod
