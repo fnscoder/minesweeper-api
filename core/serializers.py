@@ -13,6 +13,7 @@ GAME_CONFIG = {
 
 class CellSerializer(serializers.ModelSerializer):
     adjacent_mines = serializers.SerializerMethodField()
+    is_mine = serializers.SerializerMethodField()
 
     class Meta:
         model = Cell
@@ -33,6 +34,12 @@ class CellSerializer(serializers.ModelSerializer):
         """Return the number of adjacent mines only if the cell is revealed."""
         if obj.is_revealed:
             return obj.adjacent_mines
+        return None
+
+    def get_is_mine(self, obj):
+        """Return the is_mine field only if the cell is revealed or game is finished."""
+        if obj.is_revealed or not obj.game.is_active():
+            return obj.is_mine
         return None
 
 

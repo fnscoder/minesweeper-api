@@ -51,6 +51,20 @@ class GameViewSetTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.game.id)
+        for cell in response.data["cells"]:
+            self.assertIsNone(cell["is_mine"])
+
+    def test_retrieve_non_active_game(self):
+        """Test retrieving an existing non active game"""
+        url = reverse("game-detail", args=[self.game.id])
+        self.game.status = GameStatus.WON
+        self.game.save()
+        response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.game.id)
+        for cell in response.data["cells"]:
+            self.assertIsNotNone(cell["is_mine"])
 
     def test_retrieve_nonexistent_game(self):
         """Test retrieving a nonexistent game"""
