@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet
 
+from .constants import GAME_NOT_ACTIVE
 from .models import Game
 from .serializers import GameSerializer
 from .services import GameService
@@ -16,36 +17,23 @@ class GameViewSet(ModelViewSet):
         game = serializer.save()
         GameService.initialize_cells(game)
 
-    @action(detail=True, methods=["post"])
-    def flag(self, request, pk=None):
+    def _process_cell_action(self, request, cell_action):
         row = request.data.get("row")
         column = request.data.get("column")
         game = self.get_object()
-
         if not game.is_active():
-            return Response(
-                {"error": "Game is not active"}, status=HTTP_400_BAD_REQUEST
-            )
+            return GAME_NOT_ACTIVE, HTTP_400_BAD_REQUEST
 
-        data, success = GameService.toggle_flag(game, row, column)
-        if not success:
-            return Response(data, status=HTTP_400_BAD_REQUEST)
+        data, status_code = cell_action(game, row, column)
 
-        return Response(data)
+        return data, status_code
+
+    @action(detail=True, methods=["post"])
+    def flag(self, request, pk=None):
+        data, status_code = self._process_cell_action(request, GameService.toggle_flag)
+        return Response(data, status=status_code)
 
     @action(detail=True, methods=["post"])
     def reveal(self, request, pk=None):
-        row = request.data.get("row")
-        column = request.data.get("column")
-        game = self.get_object()
-
-        if not game.is_active():
-            return Response(
-                {"error": "Game is not active"}, status=HTTP_400_BAD_REQUEST
-            )
-
-        data, success = GameService.reveal_cell(game, row, column)
-        if not success:
-            return Response(data, status=HTTP_400_BAD_REQUEST)
-
-        return Response(data)
+        data, status_code = self._process_cell_action(request, GameService.reveal_cell)
+        return Response(data, status=status_code)
