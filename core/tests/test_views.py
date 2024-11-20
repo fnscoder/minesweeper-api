@@ -8,7 +8,7 @@ from core.constants import (
     CELL_ALREADY_REVEALED,
     CELL_NOT_FOUND,
     GAME_NOT_ACTIVE,
-    MINES_MUST_BE_SMALLER_THAN_CELLS,
+    MINES_MUST_BE_SMALLER_THAN_CELLS, ROWS_COLS_MINES_REQUIRED,
 )
 from core.models import Game, GameStatus, GameMode, Cell
 from core.services import GameService
@@ -67,6 +67,15 @@ class GameViewSetTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["mines"][0], MINES_MUST_BE_SMALLER_THAN_CELLS)
+
+    def test_create_game_custom_mode_missing_fields(self):
+        """ " Test creating a new game with custom mode missing required fields"""
+        data = {"mode": GameMode.CUSTOM}
+
+        response = self.client.post(self.url_list, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["required"][0], ROWS_COLS_MINES_REQUIRED)
 
     def test_flag_cell_active_game(self):
         """Test flagging a cell in an active game"""
