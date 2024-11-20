@@ -14,10 +14,12 @@ class GameViewSet(ModelViewSet):
     serializer_class = GameSerializer
 
     def perform_create(self, serializer):
+        """Initialize the cells of the game after creation."""
         game = serializer.save()
         GameService.initialize_cells(game)
 
     def _process_cell_action(self, request, cell_action):
+        """Process a cell action (flag or reveal) on a game."""
         row = request.data.get("row")
         column = request.data.get("column")
         game = self.get_object()
@@ -30,10 +32,12 @@ class GameViewSet(ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def flag(self, request, pk=None):
+        """Action to flag a cell in the game."""
         data, status_code = self._process_cell_action(request, GameService.toggle_flag)
         return Response(data, status=status_code)
 
     @action(detail=True, methods=["post"])
     def reveal(self, request, pk=None):
+        """Action to reveal a cell in the game."""
         data, status_code = self._process_cell_action(request, GameService.reveal_cell)
         return Response(data, status=status_code)
