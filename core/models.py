@@ -46,6 +46,17 @@ class Game(models.Model):
         return f"Game {self.id}"
 
 
+class CellManager(models.Manager):
+    def get_neighbors(self, cell):
+        return self.filter(
+            game=cell.game,
+            row__gte=cell.row - 1,
+            row__lte=cell.row + 1,
+            column__gte=cell.column - 1,
+            column__lte=cell.column + 1,
+        ).exclude(id=cell.id)
+
+
 class Cell(models.Model):
     game = models.ForeignKey(Game, related_name="cells", on_delete=models.CASCADE)
     row = models.PositiveSmallIntegerField()
@@ -54,6 +65,8 @@ class Cell(models.Model):
     is_revealed = models.BooleanField(default=False)
     is_flagged = models.BooleanField(default=False)
     adjacent_mines = models.IntegerField(default=0)
+
+    objects = CellManager()
 
     class Meta:
         unique_together = ("game", "row", "column")
