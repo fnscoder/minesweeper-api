@@ -102,4 +102,39 @@ You can check the live game here: [Minesweeper](https://minesweeper-web-eight.ve
             "column": 3
         }
     ```
-      
+
+* GET `/api/leaderboard/`: List all leaderboards
+
+By default, it returns the 10 leaders for each mode.
+you can pass the query param `size` to change the number of leaders returned
+
+## Tests
+The project was developed using tests. You can run them with the following commands:
+`make test` or `make cov` and check the coverage report with `make cov-report`
+
+## Coverage Report
+
+```
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+core/__init__.py                      0      0   100%
+core/admin.py                         8      0   100%
+core/apps.py                          4      0   100%
+core/constants.py                     6      0   100%
+core/migrations/0001_initial.py       6      0   100%
+core/migrations/__init__.py           0      0   100%
+core/models.py                       50      0   100%
+core/serializers.py                  50      0   100%
+core/services.py                     91      0   100%
+core/tests/__init__.py                0      0   100%
+core/tests/test_models.py            23      0   100%
+core/tests/test_views.py            151      0   100%
+core/urls.py                          6      0   100%
+core/views.py                        39      0   100%
+manage.py                            11      2    82%   13-14
+minesweeper/__init__.py               0      0   100%
+minesweeper/settings.py              26      0   100%
+minesweeper/urls.py                   3      0   100%
+---------------------------------------------------------------
+TOTAL                               474      2    99%
+```

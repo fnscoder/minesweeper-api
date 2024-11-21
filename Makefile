@@ -52,6 +52,8 @@ help:
 	@echo "  |_ makemigrations          - Create migrations"
 	@echo "  |_ stop                    - Stop the docker containers"
 	@echo "  |_ test                    - Run the tests"
+	@echo "  |_ cov                     - Run the tests with coverage"
+	@echo "  |_ cov-report              - Check the coverage report"
 	@echo "  |_ statics                 - Collect statics (useful to use the admin site)"
 	@echo "  |_ createsuperuser         - Create super user to access the admin"
 	@echo "  |_ bash                    - Run the bash inside the container"
