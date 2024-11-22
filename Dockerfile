@@ -26,6 +26,9 @@ COPY . /code
 
 # env var for building purposes
 ENV SECRET_KEY "aGkCk2XY3qk7kOZ0HDXoGq5DXlshIhfpspT2bgrV13CzJWCsQa"
+ENV CORS_ALLOWED_ORIGINS "localhost:5173"
+ENV ALLOWED_HOSTS "http://localhost"
+ENV CSRF_TRUSTED_ORIGINS "http://localhost"
 
 RUN python manage.py collectstatic --noinput
 
